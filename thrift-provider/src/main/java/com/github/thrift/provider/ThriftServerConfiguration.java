@@ -1,4 +1,4 @@
-package com.github.thrift.server;
+package com.github.thrift.provider;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

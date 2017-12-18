@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 
-import com.github.thrift.server.ThriftServerConfiguration;
+import com.github.thrift.provider.ThriftServerConfiguration;
 
 @SpringBootApplication
 @ComponentScan

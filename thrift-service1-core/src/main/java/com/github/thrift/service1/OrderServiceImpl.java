@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import com.github.thrift.server.ThriftService;
+import com.github.thrift.provider.ThriftService;
 import com.github.thrift.service1.order.OrderDTO;
 import com.github.thrift.service1.order.OrderQuery;
 import com.github.thrift.service1.order.OrderService;

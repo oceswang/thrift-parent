@@ -1,4 +1,4 @@
-package com.github.thrift.server;
+package com.github.thrift.provider;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
