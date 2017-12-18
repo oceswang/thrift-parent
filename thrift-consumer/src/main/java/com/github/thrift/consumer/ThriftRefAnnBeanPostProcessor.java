@@ -82,6 +82,10 @@ public class ThriftRefAnnBeanPostProcessor implements BeanPostProcessor
 		String address = discovery.getAddress(serviceClass.getName(), version);
 		if(StringUtils.isEmpty(address) || address.split(":").length <2)
 		{
+			if(logger.isErrorEnabled())
+			{
+				logger.error(String.format("No provider found for service: %s, version: %s", serviceClass.getName(),version));
+			}
 			return null;
 		}
 		String[] str = address.split(":");
