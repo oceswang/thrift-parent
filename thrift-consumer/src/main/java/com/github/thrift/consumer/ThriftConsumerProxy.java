@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
+import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.TServiceClient;
 import org.apache.thrift.TServiceClientFactory;
@@ -17,7 +18,7 @@ import org.apache.thrift.transport.TTransport;
 
 public class ThriftConsumerProxy
 {
-
+	GenericKeyedObjectPool<String, TSocket> pool = new GenericKeyedObjectPool<>(new ThriftSocketPoolFactory());
 	public Object proxy(Class<?> iFaceInterface, String host, int port)
 	{
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -29,21 +30,26 @@ public class ThriftConsumerProxy
 			@Override
 			public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
 			{
-				TServiceClientFactory<TServiceClient> clientFactory = (TServiceClientFactory<TServiceClient>) factoryClass.newInstance();
-				TSocket tsocket = new TSocket(host, port);
-				TTransport transport = new TFramedTransport(tsocket);
-				TProtocol protocol = new TBinaryProtocol(transport);
-				TMultiplexedProtocol mpProtocol = new TMultiplexedProtocol(protocol, serviceName);
-				TServiceClient client = clientFactory.getClient(mpProtocol);
-				transport.open();
+				String key = host+":"+port;
 				Object result = null;
+				TSocket tsocket = null;
 				try
 				{
+					TServiceClientFactory<TServiceClient> clientFactory = (TServiceClientFactory<TServiceClient>) factoryClass.newInstance();
+					tsocket = pool.borrowObject(key);
+					TTransport transport = new TFramedTransport(tsocket);
+					TProtocol protocol = new TBinaryProtocol(transport);
+					TMultiplexedProtocol mpProtocol = new TMultiplexedProtocol(protocol, serviceName);
+					TServiceClient client = clientFactory.getClient(mpProtocol);
 					result = method.invoke(client, args);
 				} catch (Exception e)
 				{
 					if(!InvocationTargetException.class.isInstance(e))
 					{
+						if(null != tsocket)
+						{
+							pool.invalidateObject(key, tsocket);
+						}
 						throw e;
 					}
 					InvocationTargetException inve = (InvocationTargetException) e;
@@ -58,6 +64,13 @@ public class ThriftConsumerProxy
 						throw e;
 					}
 					result = null;
+				}
+				finally
+				{
+					if( null != tsocket)
+					{
+						pool.returnObject(key, tsocket);
+					}
 				}
 				return result;
 			}

@@ -1,9 +1,7 @@
 package com.github.thrift.server;
 
 import java.lang.reflect.Constructor;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -41,7 +39,7 @@ import org.springframework.util.ClassUtils;
 public class ThriftServerRegistry implements InitializingBean, DisposableBean
 {
 	private static final Logger logger = LoggerFactory.getLogger(ThriftServerRegistry.class);
-	private List<ServerThread> threads = new ArrayList<>();
+	private ServerThread thread;
 	private String serverIp;
 	private int serverPort;
 	private String serverList;
@@ -69,9 +67,8 @@ public class ThriftServerRegistry implements InitializingBean, DisposableBean
 			String serviceName = ifaceClass.getEnclosingClass().getName();
 			serviceMap.put(serviceName, ann);
 		}
-		ServerThread thread = new ServerThread(beans, serverPort);
+		thread = new ServerThread(beans, serverPort);
 		thread.start();
-		threads.add(thread);
 
 		//启动时注册
 		register();
@@ -101,12 +98,9 @@ public class ThriftServerRegistry implements InitializingBean, DisposableBean
 	@Override
 	public void destroy() throws Exception
 	{
-		if (threads != null && threads.size() > 0)
+		if (thread != null)
 		{
-			for (ServerThread thread : threads)
-			{
-				thread.stopServer();
-			}
+			thread.stopServer();
 		}
 	}
 

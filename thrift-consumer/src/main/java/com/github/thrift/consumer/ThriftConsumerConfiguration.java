@@ -11,9 +11,12 @@ public class ThriftConsumerConfiguration
 	private String zkHosts;
 	
 	@Bean
-	public BeanPostProcessor beanPostProcessor()
+	public BeanPostProcessor beanPostProcessor(ThriftServerDiscovery discovery, ThriftConsumerProxy proxy)
 	{
-		return new ThriftRefAnnBeanPostProcessor();
+		ThriftRefAnnBeanPostProcessor processor = new ThriftRefAnnBeanPostProcessor();
+		processor.setDiscovery(discovery);
+		processor.setProxy(proxy);
+		return processor;
 	}
 	@Bean
 	public ThriftServerDiscovery discovery()

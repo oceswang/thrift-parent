@@ -8,21 +8,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.StringUtils;
 
-public class ThriftRefAnnBeanPostProcessor implements BeanPostProcessor, ApplicationContextAware
+public class ThriftRefAnnBeanPostProcessor implements BeanPostProcessor
 {
 	private static final Logger logger = LoggerFactory.getLogger(ThriftRefAnnBeanPostProcessor.class);
 
-	private ApplicationContext applicationContext;
-	
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
-	{
-		this.applicationContext = applicationContext;
-	}
+	private ThriftServerDiscovery discovery;
+	private ThriftConsumerProxy proxy;
 
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException
@@ -84,8 +77,6 @@ public class ThriftRefAnnBeanPostProcessor implements BeanPostProcessor, Applica
 
 	private Object refer(ThriftReference reference, Class<?> referenceClass)
 	{
-		ThriftServerDiscovery discovery = applicationContext.getBean(ThriftServerDiscovery.class);
-		ThriftConsumerProxy proxy = applicationContext.getBean(ThriftConsumerProxy.class);
 		String version = reference.version();
 		Class<?> serviceClass = referenceClass.getDeclaringClass();
 		String address = discovery.getAddress(serviceClass.getName(), version);
@@ -98,5 +89,27 @@ public class ThriftRefAnnBeanPostProcessor implements BeanPostProcessor, Applica
 		int port = Integer.valueOf(str[1]);
 		return proxy.proxy(referenceClass, host, port);
 	}
+
+	public ThriftServerDiscovery getDiscovery()
+	{
+		return discovery;
+	}
+
+	public void setDiscovery(ThriftServerDiscovery discovery)
+	{
+		this.discovery = discovery;
+	}
+
+	public ThriftConsumerProxy getProxy()
+	{
+		return proxy;
+	}
+
+	public void setProxy(ThriftConsumerProxy proxy)
+	{
+		this.proxy = proxy;
+	}
+	
+	
 
 }
